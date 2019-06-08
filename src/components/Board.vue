@@ -1,20 +1,42 @@
-<template>
-  <div class="board">
-    <ul class="board__list">
-      <li 
-        v-for="item in boardList" 
-        :key="item.id"
-        class="board__items"
+<template>    
+  <!-- <draggable 
+    v-model="boardList" 
+    :options="dragOptions" 
+    @sort="isEndedSort"
+    class="board"
+  > -->
+    <!-- <transition-group 
+      name="list" 
+      tag="ul"
+      class="board__list"
+    > -->
+    <div class="board">
+      <ul 
+        ref="board"
+        class="board__list"
       >
-        <a :href="`#${item.id}`" class="board__link">
-          <img :src="item.imgUrl" alt="이미지" class="board__img">
-        </a>
-      </li>
-    </ul>
-  </div>
+        <li 
+          v-for="item in boardList" 
+          :key="item.id"
+          class="board__items"
+        >
+          <a :href="`#${item.id}`" class="board__link">
+            <img :src="item.imgUrl" alt="이미지" class="board__img">
+          </a>
+        </li>
+      </ul>
+    </div>
+    <!-- </transition-group> -->
+  <!-- </draggable> -->
 </template>
 
 <script>
+if (Number.parseInt === undefined) {
+  Number.parseInt = window.parseInt;
+}
+import Sortable, { Swap } from 'sortablejs';
+Sortable.mount(new Swap());
+
 export default {
   name: 'Board',
   data() {
@@ -56,7 +78,59 @@ export default {
           id: 9,
           imgUrl: '/images/default.jpg'
          },
-      ]
+      ],
+      sortable: null
+    }
+  },
+  mounted() {
+    this.sortable = Sortable.create(this.$refs.board, this.dragOptions);
+  },
+  computed: {
+    dragOptions() {
+      const self = this;
+      return { 
+        // draggable: '.board__items',
+        // handle: '.board__link',
+        // animation: 100,
+        swap: true, // Enable swap plugin
+        swapClass: 'board__items--highlight', // The class applied to the hovered swap item
+        animation: 150,
+        // Changed sorting within list
+        onUpdate(event) {
+          // same properties as onEnd
+          console.log('update')
+        },
+        // Called by any change to the list (add / update / remove)
+        onSort (event) {
+          // same properties as onEnd
+          const temp = self.boardList[event.newIndex];
+          self.boardList[event.newIndex] = self.boardList[event.oldIndex];
+          self.boardList[event.oldIndex] = temp;
+          console.log('sort')
+        },
+        onEnd(event) {
+          console.log('end')
+        //   var itemEl = event.item;  // dragged HTMLElement
+        //   event.to;    // target list
+        //   event.from;  // previous list
+        //   event.oldIndex;  // element's old index within old parent
+        //   event.newIndex;  // element's new index within new parent
+        //   event.oldDraggableIndex; // element's old index within old parent, only counting draggable elements
+        //   event.newDraggableIndex; // element's new index within new parent, only counting draggable elements
+        //   event.clone // the clone element
+        //   event.pullMode;  // when item is in another sortable: `"clone"` if cloning, `true` if moving
+        },
+      }
+    }
+  },
+  methods: {
+    isEndedSort(event) {
+      console.log(event)
+      
+      // this.indexEndedSort = event.newIndex
+      // setTimeout(() => {
+      //   this.indexEndedSort = -1
+      // }, 500)
     }
   }
 }
@@ -84,6 +158,9 @@ export default {
     height: $dimensions;
     border: 1px solid #000;
     font-size: 30px;
+  }
+  &__items--highlight {
+    transform: scale(1.1);
   }
   &__link {
     display: flex;
