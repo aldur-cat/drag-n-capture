@@ -21,7 +21,7 @@
           class="board__items"
         >
           <a :href="`#${item.id}`" class="board__link">
-            <img :src="item.imgUrl" alt="이미지" class="board__img">
+            <img :src="require(`@/assets${item.imgUrl}`)" alt="이미지" class="board__img">
           </a>
         </li>
       </ul>
@@ -84,6 +84,7 @@ export default {
   },
   mounted() {
     this.sortable = Sortable.create(this.$refs.board, this.dragOptions);
+    console.log()
   },
   computed: {
     dragOptions() {
